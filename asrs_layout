@@ -1,0 +1,46 @@
+ASRS Project
+
+Schemas:
+class Item(BaseModel):
+	trayId: UUID
+	itemName: str
+	cameraIPs: [str, str]
+	latestPhotoPath: str
+	updatedAt: timestamp
+
+class ItemArchive(BaseModel):
+	archiveId: UUID
+	photoPath: str
+	createdAt: timestamp
+	trayId: UUID
+
+Functions:
+store(trayId: str):
+	retrieve_ips(traysId)
+	take_photo(ip[0])
+	take_photo(ip[1])
+	return stitch_photo(photo1path, photo2path, trayId)
+
+retrieve_ips(trayId: str):
+	return Item.cameraIPs || error
+
+take_photo(ip: str):
+	take photo via ip
+	return photo taken path || error
+
+stitch_photo(photo1path: str, photo2path: str, trayId: str):
+	stitch photos
+	return store_photo(trayId, photoPath) || error
+
+store_photo(trayId: str, photoPath: str):
+	retrieve_photo(trayId)
+	archive_photo(trayId, photoPath)
+	update latest photo path
+	return success || error
+
+archive_photo(trayId: str, photoPath: str):
+	archive old photo path
+	return success || error
+
+retrieve_photo(trayId: str):
+	return Item.latestPhotoPath || error
