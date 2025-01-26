@@ -16,6 +16,8 @@ Jinja2==3.1.5
 markdown-it-py==3.0.0
 MarkupSafe==3.0.2
 mdurl==0.1.2
+numpy==2.2.2
+opencv-python==4.11.0.86
 pydantic==2.10.6
 pydantic_core==2.27.2
 Pygments==2.19.1
