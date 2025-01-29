@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import cv2
+from PIL import Image
 from sqlalchemy.orm import Session
 
 from app.db import models
@@ -8,9 +9,12 @@ from app.schemas import item_schema
 
 
 def store(session: Session, item: item_schema.StoreItem):
-    ips = retrieve_ips(session, item.trayId)
+    # ips = retrieve_ips(session, item.trayId)
+    ips = ["a", "b"]
     photo1path = take_photo(ips[0], 1)
+    print(photo1path)
     photo2path = take_photo(ips[1], 2)
+    print(photo2path)
     return stitch_photo(session, photo1path, photo2path, item.trayId, item.itemName)
 
 
@@ -25,41 +29,47 @@ def retrieve_ips(session: Session, trayId: str):
 
 
 def take_photo(ip: str, num: int):
-    ip_camera_url = f"http://{ip}:<PORT>/video"
+    # ip_camera_url = f"http://{ip}:<PORT>/video"
 
     filename = f"photo{num}.jpg"
-    cap = cv2.VideoCapture(ip_camera_url)
-
-    if not cap.isOpened():
-        print("Error: Unable to connect to the IP camera.")
-    else:
-        ret, frame = cap.read()
-        if ret:
-            cv2.imwrite(filename, frame)
-        else:
-            print("Error: Unable to capture a frame.")
-
-    cap.release()
+    # cap = cv2.VideoCapture(ip_camera_url)
+    #
+    # if not cap.isOpened():
+    #     print("Error: Unable to connect to the IP camera.")
+    # else:
+    #     ret, frame = cap.read()
+    #     if ret:
+    #         cv2.imwrite(filename, frame)
+    #     else:
+    #         print("Error: Unable to capture a frame.")
+    #
+    # cap.release()
     return filename
 
 
 def stitch_photo(
     session: Session, photo1path: str, photo2path: str, trayId: str, itemName: str = ""
 ):
-    image1 = cv2.imread(photo1path)
-    image2 = cv2.imread(photo2path)
+    filename = f"{trayId}-{datetime.now()}.jpg"
 
-    stitcher = cv2.Stitcher_create()
-    status, stitched_image = stitcher.stitch([image1, image2])
+    image1 = Image.open(photo1path)
+    image2 = Image.open(photo2path)
 
-    filename = f"{trayId}{datetime.now()}.jpg"
+    height1 = image1.height
+    height2 = image2.height
+    max_height = max(height1, height2)
 
-    if status == cv2.Stitcher_OK:
-        cv2.imwrite(filename, stitched_image)
-    else:
-        print("Stitching failed. Error code:", status)
+    image1 = image1.resize((image1.width, max_height))
+    image2 = image2.resize((image2.width, max_height))
 
-    return store_photo(session, trayId, filename, itemName)
+    stitched_image = Image.new("RGB", (image1.width + image2.width, max_height))
+
+    stitched_image.paste(image1, (0, 0))
+    stitched_image.paste(image2, (image1.width, 0))
+
+    stitched_image.save(filename)
+    stitched_image.show()
+    # return store_photo(session, trayId, filename, itemName)
 
 
 def archive_photo(session: Session, trayId: str, photoPath: str):
