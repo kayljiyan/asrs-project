@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import Base, engine
+from app.api.v1.router import v1_router
 
 
 @asynccontextmanager
@@ -21,6 +22,8 @@ fastapp.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
 )
+
+fastapp.include_router(v1_router, prefix="/api/v1")
 
 
 @fastapp.get("/")

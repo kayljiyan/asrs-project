@@ -3,14 +3,15 @@ from datetime import datetime
 import cv2
 from sqlalchemy.orm import Session
 
-from app import models
+from app.db import models
+from app.schemas import item_schema
 
 
-def store(session: Session, trayId: str, itemName: str = ""):
-    ips = retrieve_ips(session, trayId)
+def store(session: Session, item: item_schema.StoreItem):
+    ips = retrieve_ips(session, item.trayId)
     photo1path = take_photo(ips[0], 1)
     photo2path = take_photo(ips[1], 2)
-    return stitch_photo(session, photo1path, photo2path, trayId, itemName)
+    return stitch_photo(session, photo1path, photo2path, item.trayId, item.itemName)
 
 
 def retrieve_ips(session: Session, trayId: str):
@@ -91,3 +92,4 @@ def store_photo(
         db_photo.update({"latestPhotoPath": photoPath})
         db_photo.update({"itemName": itemName})
         return True
+    return False
