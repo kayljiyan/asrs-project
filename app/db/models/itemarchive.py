@@ -12,7 +12,7 @@ class ItemArchive(Base):
     __tablename__ = "item_archives"
 
     archiveId: Mapped[str] = mapped_column(
-        TEXT(50), primary_key=True, default=str(uuid4)
+        TEXT(50), primary_key=True, default=str(uuid4())
     )
     photoPath: Mapped[str] = mapped_column(TEXT(200), nullable=True, unique=True)
     createdAt: Mapped[DateTime] = mapped_column(

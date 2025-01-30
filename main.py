@@ -3,13 +3,16 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app import Base, engine
+from app import Base, engine, init_trays
 from app.api.v1.router import v1_router
+from app.db.session import SessionLocal
 
 
 @asynccontextmanager
 async def lifespan(fastapp: FastAPI):
     Base.metadata.create_all(bind=engine)
+    with SessionLocal() as db:
+        init_trays(db)
     yield
     print("Server shutting down")
 

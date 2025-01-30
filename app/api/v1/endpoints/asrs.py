@@ -36,6 +36,7 @@ async def view_item(
 ):
     try:
         viewResult = asrs_service.retrieve_photo(session, trayId)
+        print("Viewresult: ", viewResult)
         if viewResult:
             response.status_code = status.HTTP_200_OK
             return {"data": viewResult}

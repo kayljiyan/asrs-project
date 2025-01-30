@@ -9,8 +9,9 @@ from app.schemas import item_schema
 
 
 def store(session: Session, item: item_schema.StoreItem):
-    # ips = retrieve_ips(session, item.trayId)
-    ips = ["a", "b"]
+    ips = retrieve_ips(session, item.trayId)
+    # ips = ["a", "b"]
+    print("IPS: ", ips)
     photo1path = take_photo(ips[0], 1)
     print(photo1path)
     photo2path = take_photo(ips[1], 2)
@@ -24,7 +25,8 @@ def retrieve_ips(session: Session, trayId: str):
         .filter(models.Item.trayId == trayId)
         .first()
     )
-    ips = ips.split(",")
+    print("IPS: ", ips)
+    ips = ips[0].split(",")
     return ips
 
 
@@ -69,7 +71,7 @@ def stitch_photo(
 
     stitched_image.save(filename)
     stitched_image.show()
-    # return store_photo(session, trayId, filename, itemName)
+    return store_photo(session, trayId, filename, itemName)
 
 
 def archive_photo(session: Session, trayId: str, photoPath: str):
@@ -85,7 +87,7 @@ def retrieve_photo(session: Session, trayId: str):
         .filter(models.Item.trayId == trayId)
         .first()
     )
-    return latestPhotoPath
+    return latestPhotoPath[0]
 
 
 def store_photo(
@@ -97,9 +99,11 @@ def store_photo(
     latestPhotoPath = retrieve_photo(session, trayId)
     if latestPhotoPath:
         archive_photo(session, trayId, latestPhotoPath)
-    db_photo = session.query(models.Item).filter(models.Item.trayId == trayId)
-    if db_photo.first():
-        db_photo.update({"latestPhotoPath": photoPath})
-        db_photo.update({"itemName": itemName})
+    db_photo = session.query(models.Item).filter(models.Item.trayId == trayId).first()
+    if db_photo:
+        db_photo.latestPhotoPath = photoPath
+        db_photo.itemName = itemName
+        session.commit()
+        session.refresh(db_photo)
         return True
     return False
