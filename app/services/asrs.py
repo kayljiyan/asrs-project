@@ -31,21 +31,21 @@ def retrieve_ips(session: Session, trayId: str):
 
 
 def take_photo(ip: str, num: int):
-    # ip_camera_url = f"http://{ip}:<PORT>/video"
+    ip_camera_url = "rtsp://192.168.0.104:554/user=admin_password=tlJwpbo6_channel=0_stream=0&onvif=0.sdp?real_stream"
 
     filename = f"photo{num}.jpg"
-    # cap = cv2.VideoCapture(ip_camera_url)
-    #
-    # if not cap.isOpened():
-    #     print("Error: Unable to connect to the IP camera.")
-    # else:
-    #     ret, frame = cap.read()
-    #     if ret:
-    #         cv2.imwrite(filename, frame)
-    #     else:
-    #         print("Error: Unable to capture a frame.")
-    #
-    # cap.release()
+    cap = cv2.VideoCapture(ip_camera_url)
+
+    if not cap.isOpened():
+        print("Error: Unable to connect to the IP camera.")
+    else:
+        ret, frame = cap.read()
+        if ret:
+            cv2.imwrite(filename, frame)
+        else:
+            print("Error: Unable to capture a frame.")
+
+    cap.release()
     return filename
 
 
