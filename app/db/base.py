@@ -7,9 +7,9 @@ from .models import item, itemarchive
 
 
 def init_trays(db: Session):
-    for i in range(1, 8, 2):
-        db_tray = item.Item(
-            trayId=f"TRAY0{i}", cameraIPs=f"192.168.0.{i+1},192.168.0.{(i+1)*2}"
-        )
-        db.add(db_tray)
+    db_tray = item.Item(
+        trayId=f"TRAY01",
+        cameraIPs=f"rtsp://192.168.0.104:554/user=admin_password=tlJwpbo6_channel=0_stream=0&onvif=0.sdp?real_stream,rtsp://192.168.0.104:554/user=admin_password=tlJwpbo6_channel=0_stream=0&onvif=0.sdp?real_stream",
+    )
+    db.add(db_tray)
     db.commit()

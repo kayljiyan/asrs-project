@@ -1,4 +1,5 @@
 from datetime import datetime
+from time import sleep
 
 import cv2
 from PIL import Image
@@ -10,7 +11,7 @@ from app.schemas import item_schema
 
 def store(session: Session, item: item_schema.StoreItem):
     ips = retrieve_ips(session, item.trayId)
-    # ips = ["a", "b"]
+    # ips = "rtsp://192.168.0.104:554/user=admin_password=tlJwpbo6_channel=0_stream=0&onvif=0.sdp?real_stream"
     print("IPS: ", ips)
     photo1path = take_photo(ips[0], 1)
     print(photo1path)
@@ -34,12 +35,18 @@ def take_photo(ip: str, num: int):
     ip_camera_url = "rtsp://192.168.0.104:554/user=admin_password=tlJwpbo6_channel=0_stream=0&onvif=0.sdp?real_stream"
 
     filename = f"photo{num}.jpg"
-    cap = cv2.VideoCapture(ip_camera_url)
+    cap = cv2.VideoCapture(ip)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 960)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 540)
+    print("width", cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    print("height", cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
     if not cap.isOpened():
         print("Error: Unable to connect to the IP camera.")
     else:
+        sleep(1)
         ret, frame = cap.read()
+        frame = cv2.resize(frame, (640, 360), interpolation=cv2.INTER_LINEAR)
         if ret:
             cv2.imwrite(filename, frame)
         else:
@@ -70,7 +77,6 @@ def stitch_photo(
     stitched_image.paste(image2, (image1.width, 0))
 
     stitched_image.save(filename)
-    stitched_image.show()
     return store_photo(session, trayId, filename, itemName)
 
 

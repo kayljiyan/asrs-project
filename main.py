@@ -12,7 +12,10 @@ from app.db.session import SessionLocal
 async def lifespan(fastapp: FastAPI):
     Base.metadata.create_all(bind=engine)
     with SessionLocal() as db:
-        init_trays(db)
+        try:
+            init_trays(db)
+        except Exception as e:
+            pass
     yield
     print("Server shutting down")
 
