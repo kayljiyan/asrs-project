@@ -1,3 +1,5 @@
+import asyncio
+import os
 from datetime import datetime
 from time import sleep
 
@@ -9,15 +11,15 @@ from app.db import models
 from app.schemas import item_schema
 
 
-def store(session: Session, item: item_schema.StoreItem):
+async def store(session: Session, item: item_schema.StoreItem):
     ips = retrieve_ips(session, item.trayId)
     # ips = "rtsp://192.168.0.104:554/user=admin_password=tlJwpbo6_channel=0_stream=0&onvif=0.sdp?real_stream"
-    print("IPS: ", ips)
-    photo1path = take_photo(ips[0], 1)
-    print(photo1path)
-    photo2path = take_photo(ips[1], 2)
-    print(photo2path)
-    return stitch_photo(session, photo1path, photo2path, item.trayId, item.itemName)
+    task1 = asyncio.create_task(take_photo(ips[0], 1))
+    task2 = asyncio.create_task(take_photo(ips[1], 2))
+    results = await asyncio.gather(task1, task2)
+    # photo1path = take_photo(ips[0], 1)
+    # photo2path = take_photo(ips[1], 2)
+    return stitch_photo(session, results[0], results[1], item.trayId, item.itemName)
 
 
 def retrieve_ips(session: Session, trayId: str):
@@ -31,20 +33,15 @@ def retrieve_ips(session: Session, trayId: str):
     return ips
 
 
-def take_photo(ip: str, num: int):
+async def take_photo(ip: str, num: int):
     ip_camera_url = "rtsp://192.168.0.104:554/user=admin_password=tlJwpbo6_channel=0_stream=0&onvif=0.sdp?real_stream"
 
     filename = f"photo{num}.jpg"
     cap = cv2.VideoCapture(ip)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 960)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 540)
-    print("width", cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    print("height", cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
     if not cap.isOpened():
         print("Error: Unable to connect to the IP camera.")
     else:
-        sleep(1)
         ret, frame = cap.read()
         frame = cv2.resize(frame, (640, 360), interpolation=cv2.INTER_LINEAR)
         if ret:
@@ -59,6 +56,8 @@ def take_photo(ip: str, num: int):
 def stitch_photo(
     session: Session, photo1path: str, photo2path: str, trayId: str, itemName: str = ""
 ):
+    save_folder = "images"
+    os.makedirs(save_folder, exist_ok=True)
     filename = f"{trayId}-{datetime.now()}.jpg"
 
     image1 = Image.open(photo1path)
@@ -76,7 +75,10 @@ def stitch_photo(
     stitched_image.paste(image1, (0, 0))
     stitched_image.paste(image2, (image1.width, 0))
 
+    filename = os.path.join(save_folder, filename)
     stitched_image.save(filename)
+    os.remove(photo1path)
+    os.remove(photo2path)
     return store_photo(session, trayId, filename, itemName)
 
 
