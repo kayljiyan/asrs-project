@@ -1,12 +1,9 @@
-import cv2
+from pathlib import Path
+from PIL import Image
 
-cap = cv2.VideoCapture(4)
 
-while cap.isOpened():
-    ret, frame = cap.read()
-    frame = cv2.resize(frame, (960, 540))
-    cv2.imshow("frame", frame)
-    if cv2.waitKey(20) & 0xFF == ord("q"):
-        break
-cap.release()
-cv2.destroyAllWindows()
+filepath = Path("C:/Users/asrs/Desktop/ASRS/asrs-project/photo1.jpeg")
+
+print(filepath)
+
+image = Image.open(filepath)

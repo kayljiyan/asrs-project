@@ -1,7 +1,8 @@
 import asyncio
 import os
-from datetime import datetime
-from time import sleep
+from pathlib import Path
+from datetime import datetime, date
+from time import sleep, time
 
 import cv2
 from PIL import Image
@@ -14,12 +15,19 @@ from app.schemas import item_schema
 async def store(session: Session, item: item_schema.StoreItem):
     # ips = retrieve_ips(session, item.trayId)
     # ips = "rtsp://192.168.0.104:554/user=admin_password=tlJwpbo6_channel=0_stream=0&onvif=0.sdp?real_stream"
-    task1 = asyncio.create_task(take_photo(2, 1))
-    task2 = asyncio.create_task(take_photo(4, 2))
+    task1 = asyncio.create_task(take_photo(0, 1))
+    task2 = asyncio.create_task(take_photo(1, 2))
     results = await asyncio.gather(task1, task2)
     # photo1path = take_photo(ips[0], 1)
     # photo2path = take_photo(ips[1], 2)
-    return stitch_photo(session, results[0], results[1], item.trayId, item.itemName)
+    save_folder = "images"
+    os.makedirs(save_folder, exist_ok=True)
+    filename = f"{item.trayId}-{date.today()}-{int(time())}.jpg"
+    filename: str = str(filename).replace(" ", "-")
+    filename = os.path.normpath(os.path.join(save_folder, filename))
+    filename = str(filename).strip().encode("utf-8").decode("utf-8")
+    filename = Path(filename)
+    return stitch_photo(session, results[0], results[1], item.trayId, str(filename), item.itemName)
 
 
 def retrieve_ips(session: Session, trayId: str):
@@ -54,12 +62,8 @@ async def take_photo(ip: int, num: int):
 
 
 def stitch_photo(
-    session: Session, photo1path: str, photo2path: str, trayId: str, itemName: str = ""
+    session: Session, photo1path: str, photo2path: str, trayId: str, filename: str, itemName: str = ""
 ):
-    save_folder = "images"
-    os.makedirs(save_folder, exist_ok=True)
-    filename = f"{trayId}-{datetime.now()}.jpg"
-
     image1 = Image.open(photo1path)
     image2 = Image.open(photo2path)
 
@@ -74,9 +78,11 @@ def stitch_photo(
 
     stitched_image.paste(image1, (0, 0))
     stitched_image.paste(image2, (image1.width, 0))
-
-    filename = os.path.join(save_folder, filename)
-    stitched_image.save(filename)
+    #source = f"{trayId}.jpg"
+    stitched_image.save(fp=filename)
+    #source = Path(source)
+    #destination = filename
+    #source.rename(destination)
     os.remove(photo1path)
     os.remove(photo2path)
     return store_photo(session, trayId, filename, itemName)

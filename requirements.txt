@@ -18,6 +18,7 @@ MarkupSafe==3.0.2
 mdurl==0.1.2
 numpy==2.2.2
 opencv-python==4.11.0.86
+pillow
 pydantic==2.10.6
 pydantic_core==2.27.2
 Pygments==2.19.1
@@ -33,6 +34,5 @@ starlette==0.41.2
 typer==0.15.1
 typing_extensions==4.12.2
 uvicorn==0.34.0
-uvloop==0.21.0
 watchfiles==1.0.4
 websockets==14.2

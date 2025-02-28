@@ -19,15 +19,15 @@ async def store_item(
     response: Response,
     session: Session = Depends(get_db),
 ):
-    try:
-        storeResult = await asrs_service.store(session, item)
-        if storeResult:
-            response.status_code = status.HTTP_200_OK
-            return {"detail": f"{item.itemName} stored successfully"}
-        return {"detail": f"{item.itemName} storage failure"}
-    except Exception as e:
-        response.status_code = status.HTTP_400_BAD_REQUEST
-        return {"detail": f"Error: {str(e)}"}
+    #try:
+    storeResult = await asrs_service.store(session, item)
+    if storeResult:
+        response.status_code = status.HTTP_200_OK
+        return {"detail": f"{item.itemName} stored successfully"}
+    return {"detail": f"{item.itemName} storage failure"}
+    #except Exception as e:
+    #    response.status_code = status.HTTP_400_BAD_REQUEST
+    #    return {"detail": f"Error: {str(e)}"}
 
 
 @router.get("/view/{trayId}")
