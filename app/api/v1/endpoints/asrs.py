@@ -19,15 +19,15 @@ async def store_item(
     response: Response,
     session: Session = Depends(get_db),
 ):
-    # try:
-    storeResult = await asrs_service.store(session, item)
-    if storeResult:
-        response.status_code = status.HTTP_200_OK
-        return {"detail": f"{item.itemName} stored successfully"}
-    return {"detail": f"{item.itemName} storage failure"}
-    # except Exception as e:
-    #     response.status_code = status.HTTP_400_BAD_REQUEST
-    #     return {"detail": f"Error: {str(e)}"}
+    try:
+        storeResult = await asrs_service.store(session, item)
+        if storeResult:
+            response.status_code = status.HTTP_200_OK
+            return {"detail": f"{item.itemName} stored successfully"}
+        return {"detail": f"{item.itemName} storage failure"}
+    except Exception as e:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return {"detail": f"Error: {str(e)}"}
 
 
 @router.get("/view/{trayId}")
@@ -41,10 +41,10 @@ async def view_item(
         print("Viewresult: ", viewResult)
         if not viewResult:
             response.status_code = status.HTTP_404_NOT_FOUND
-            return {"data": "image not found"}
+            return {"detail": "image not found"}
         if not os.path.exists(viewResult):
             response.status_code = status.HTTP_404_NOT_FOUND
-            return {"data": "image not found"}
+            return {"detail": "image not found"}
         return FileResponse(viewResult, media_type="image/jpeg")
     except Exception as e:
         response.status_code = status.HTTP_400_BAD_REQUEST

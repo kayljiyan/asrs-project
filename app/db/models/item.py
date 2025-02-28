@@ -12,7 +12,7 @@ class Item(Base):
     trayId: Mapped[str] = mapped_column(TEXT(50), primary_key=True)
     itemName: Mapped[str] = mapped_column(TEXT(200), nullable=True)
     cameraIPs: Mapped[str] = mapped_column(TEXT(200), nullable=False)
-    latestPhotoPath: Mapped[str] = mapped_column(TEXT(200), nullable=True, unique=True)
+    latestPhotoPath: Mapped[str] = mapped_column(TEXT(200), nullable=True)
     updatedAt: Mapped[datetime] = mapped_column(
         TIMESTAMP, nullable=False, default=datetime.now()
     )

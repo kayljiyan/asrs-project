@@ -12,10 +12,10 @@ from app.schemas import item_schema
 
 
 async def store(session: Session, item: item_schema.StoreItem):
-    ips = retrieve_ips(session, item.trayId)
+    # ips = retrieve_ips(session, item.trayId)
     # ips = "rtsp://192.168.0.104:554/user=admin_password=tlJwpbo6_channel=0_stream=0&onvif=0.sdp?real_stream"
-    task1 = asyncio.create_task(take_photo(ips[0], 1))
-    task2 = asyncio.create_task(take_photo(ips[1], 2))
+    task1 = asyncio.create_task(take_photo(2, 1))
+    task2 = asyncio.create_task(take_photo(4, 2))
     results = await asyncio.gather(task1, task2)
     # photo1path = take_photo(ips[0], 1)
     # photo2path = take_photo(ips[1], 2)
@@ -33,7 +33,7 @@ def retrieve_ips(session: Session, trayId: str):
     return ips
 
 
-async def take_photo(ip: str, num: int):
+async def take_photo(ip: int, num: int):
     ip_camera_url = "rtsp://192.168.0.104:554/user=admin_password=tlJwpbo6_channel=0_stream=0&onvif=0.sdp?real_stream"
 
     filename = f"photo{num}.jpg"

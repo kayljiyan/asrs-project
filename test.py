@@ -1,8 +1,6 @@
 import cv2
 
-cap = cv2.VideoCapture(
-    "rtsp://192.168.0.104:554/user=admin_password=tlJwpbo6_channel=0_stream=0&onvif=0.sdp?real_stream"
-)
+cap = cv2.VideoCapture(4)
 
 while cap.isOpened():
     ret, frame = cap.read()
