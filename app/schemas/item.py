@@ -10,6 +10,5 @@ class StoreItem(BaseModel):
 
 
 class Item(StoreItem):
-    cameraIPs: str
     latestPhotoPath: str
     updatedAt: datetime
