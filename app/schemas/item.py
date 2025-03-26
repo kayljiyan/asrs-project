@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 
 class StoreItem(BaseModel):
-    trayId: str
+    trayId: int
     itemName: Optional[str]
 
 

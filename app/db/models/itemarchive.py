@@ -14,7 +14,7 @@ class ItemArchive(Base):
     archiveId: Mapped[str] = mapped_column(
         TEXT(50), primary_key=True, default=lambda: str(uuid4())
     )
-    photoPath: Mapped[str] = mapped_column(TEXT(200), nullable=True, unique=True)
+    photoPath: Mapped[str] = mapped_column(TEXT(200), nullable=True, unique=False)
     createdAt: Mapped[DateTime] = mapped_column(
         TIMESTAMP, nullable=False, default=datetime.now()
     )

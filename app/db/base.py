@@ -7,8 +7,10 @@ from .models import item, itemarchive
 
 
 def init_trays(db: Session):
-    db_tray = item.Item(
-        trayId=f"TRAY01",
-    )
-    db.add(db_tray)
-    db.commit()
+    for i in range(1,32):
+        db_tray = item.Item(
+            trayId=i,
+            latestPhotoPath="placeholder.jpg",
+        )
+        db.add(db_tray)
+        db.commit()

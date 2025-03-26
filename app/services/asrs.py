@@ -1,10 +1,12 @@
 import asyncio
 import os
+import threading
 from datetime import date, datetime
 from pathlib import Path
 from time import sleep, time
 
 import cv2
+import numpy as np
 from PIL import Image
 from sqlalchemy.orm import Session
 
@@ -47,7 +49,7 @@ async def take_photo(ip: int, num: int):
         print("Error: Unable to connect to the IP camera.")
     else:
         ret, frame = cap.read()
-        frame = cv2.resize(frame, (640, 360), interpolation=cv2.INTER_LINEAR)
+        #frame = cv2.resize(frame, (640, 360), interpolation=cv2.INTER_LINEAR)
         if ret:
             cv2.imwrite(filename, frame)
         else:
@@ -71,14 +73,19 @@ def stitch_photo(
     height1 = image1.height
     height2 = image2.height
     max_height = max(height1, height2)
+    crop_size = min(image1.width, image2.width) // 4
 
     image1 = image1.resize((image1.width, max_height))
     image2 = image2.resize((image2.width, max_height))
+
+    #img1_cropped = image1.crop((0, 0, image1.width-crop_size, height1))
+    #img2_cropped = image2.crop((crop_size, 0, image2.width, height2))
 
     stitched_image = Image.new("RGB", (image1.width + image2.width, max_height))
 
     stitched_image.paste(image1, (0, 0))
     stitched_image.paste(image2, (image1.width, 0))
+    stitched_image = stitched_image.rotate(180)
     stitched_image.save(fp=filename)
     os.remove(photo1path)
     os.remove(photo2path)
@@ -116,5 +123,21 @@ def store_photo(
         db_photo.itemName = itemName
         session.commit()
         session.refresh(db_photo)
-        return True
+        return photoPath, trayId
     return False
+
+async def close_specific_window(window_name, delay):
+    await asyncio.sleep(delay)
+    if cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) >= 1:
+        cv2.destroyWindow(window_name)
+
+
+def show_image(filename: str, trayId: str):
+    image = Image.open(filename)
+    img_cv = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+
+    cv2.namedWindow(trayId, cv2.WINDOW_NORMAL)
+    cv2.setWindowProperty(trayId, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    cv2.imshow(trayId, img_cv)
+    cv2.waitKey(100)
+    return True

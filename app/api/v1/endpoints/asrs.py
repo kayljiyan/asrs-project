@@ -1,3 +1,4 @@
+import asyncio
 import os
 from typing import Annotated
 
@@ -19,15 +20,18 @@ async def store_item(
     response: Response,
     session: Session = Depends(get_db),
 ):
-    #try:
-    storeResult = await asrs_service.store(session, item)
-    if storeResult:
-        response.status_code = status.HTTP_200_OK
-        return {"detail": f"{item.itemName} stored successfully"}
-    return {"detail": f"{item.itemName} storage failure"}
-    #except Exception as e:
-    #    response.status_code = status.HTTP_400_BAD_REQUEST
-    #    return {"detail": f"Error: {str(e)}"}
+    try:
+        filename, trayId = await asrs_service.store(session, item)
+        if filename:
+            asrs_service.show_image(filename, str(trayId))
+            asyncio.create_task(asrs_service.close_specific_window(str(trayId), 30))
+            response.status_code = status.HTTP_200_OK
+            return {"detail": f"{item.itemName} stored successfully"}
+        return {"detail": f"{item.itemName} storage failure"}
+    except Exception as e:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        print(str(e))
+        return {"detail": f"Error: {str(e)}"}
 
 
 @router.get("/view/{trayId}")
@@ -45,7 +49,9 @@ async def view_item(
         if not os.path.exists(viewResult):
             response.status_code = status.HTTP_404_NOT_FOUND
             return {"detail": "image not found"}
-        return FileResponse(viewResult, media_type="image/jpeg")
+        asrs_service.show_image(viewResult, str(trayId))
+        asyncio.create_task(asrs_service.close_specific_window(str(trayId), 30))
+        response.status_code = status.HTTP_204_NO_CONTENT
     except Exception as e:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return {"detail": f"Error: {str(e)}"}
